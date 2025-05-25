@@ -270,20 +270,20 @@
                                 <tr>
                                     <td class="pl-4">Workshop and vocational areas</td>
                                     <td>4.5 net</td>
-                                    <td>NR</td>
-                                    <td>NR</td>
-                                    <td>NR</td>
-                                    <td>NR</td>
-                                    <td>NR</td>
+                                    <td>100</td>
+                                    <td>100</td>
+                                    <td>100</td>
+                                    <td>60</td>
+                                    <td>60</td>
                                 </tr>
                                 <tr>
                                     <td class="pl-4">Day nurseries with sleeping facilities</td>
                                     <td>3.5 net</td>
-                                    <td>30</td>
-                                    <td>30</td>
-                                    <td>30</td>
-                                    <td>30</td>
-                                    <td>15</td>
+                                    <td>100</td>
+                                    <td>100</td>
+                                    <td>100</td>
+                                    <td>60</td>
+                                    <td>60</td>
                                 </tr>
                                 <tr>
                                     <td class="pl-4">Hospital Patient accommodation</td>
@@ -296,16 +296,17 @@
                                 </tr>
                                 <tr>
                                     <td>III. Other residential</td>
-                                    <td></td>
-                                    <td></td>
-                                    <td></td>
-                                    <td></td>
-                                    <td></td>
-                                    <td></td>
+                                    <td>20 gross</td>
+                                    <td>50</td>
+                                    <td>50</td>
+                                    <td>50</td>
+                                    <td>50</td>
+                                    <td>30</td>
+
                                 </tr>
                                 <tr>
-                                    <td class="pl-4">Flats</td>
-                                    <td>20 gross</td>
+                                    <td class="pl-4">Apartment/Flats</td>
+                                    <td>24 gross</td>
                                     <td>50</td>
                                     <td>50</td>
                                     <td>50</td>
@@ -320,16 +321,7 @@
                                     <td>50</td>
                                     <td>50</td>
                                     <td>30</td>
-                                </tr>
-                                <tr>
-                                    <td class="pl-4">Hotels (bedroom in hotels at 2 person per room)</td>
-                                    <td>24 gross</td>
-                                    <td>50</td>
-                                    <td>50</td>
-                                    <td>50</td>
-                                    <td>50</td>
-                                    <td>30</td>
-                                </tr>
+                                </tr
                                 <tr>
                                     <td>IV. Office</td>
                                     <td>10 gross</td>
@@ -462,12 +454,11 @@
         // Data for different purpose groups, including net factor, stair capacity, and door capacity
         const purposeGroupData = [
             { name: "Institutional - Classroom area", netFactor: 2, doorCapacity: 100, horizontalExitCapacity: 100, rampMainExitCapacity: 100, rampSecondExitCapacity: 60, stairCapacity: 60 },
-            { name: "Institutional - Workshop and vocational areas", netFactor: 4.5, doorCapacity: null, horizontalExitCapacity: null, rampMainExitCapacity: null, rampSecondExitCapacity: null, stairCapacity: null }, // NR in image
-            { name: "Institutional - Day nurseries with sleeping facilities", netFactor: 3.5, doorCapacity: 30, horizontalExitCapacity: 30, rampMainExitCapacity: 30, rampSecondExitCapacity: 30, stairCapacity: 15 },
+            { name: "Institutional - Workshop and vocational areas", netFactor: 4.5, doorCapacity: 100, horizontalExitCapacity: 100, rampMainExitCapacity: 100, rampSecondExitCapacity: 60, stairCapacity: 60 }, 
+            { name: "Institutional - Day nurseries with sleeping facilities", netFactor: 3.5, doorCapacity: 100, horizontalExitCapacity: 100, rampMainExitCapacity: 100, rampSecondExitCapacity: 60, stairCapacity: 60 },
             { name: "Institutional - Hospital (Patient accommodation)", netFactor: 24, doorCapacity: 30, horizontalExitCapacity: 30, rampMainExitCapacity: 30, rampSecondExitCapacity: 30, stairCapacity: 15 },
-            { name: "Other residential - Flats", netFactor: 20, doorCapacity: 50, horizontalExitCapacity: 50, rampMainExitCapacity: 50, rampSecondExitCapacity: 50, stairCapacity: 30 },
+            { name: "Other residential - Apartments/Flats", netFactor: 24, doorCapacity: 50, horizontalExitCapacity: 50, rampMainExitCapacity: 50, rampSecondExitCapacity: 50, stairCapacity: 30 },
             { name: "Other residential - General public areas in hotels", netFactor: 24, doorCapacity: 50, horizontalExitCapacity: 50, rampMainExitCapacity: 50, rampSecondExitCapacity: 50, stairCapacity: 30 },
-            { name: "Other residential - Hotels (bedroom in hotels at 2 person per room)", netFactor: 24, doorCapacity: 50, horizontalExitCapacity: 50, rampMainExitCapacity: 50, rampSecondExitCapacity: 50, stairCapacity: 30 },
             { name: "Office", netFactor: 10, doorCapacity: 100, horizontalExitCapacity: 100, rampMainExitCapacity: 100, rampSecondExitCapacity: 60, stairCapacity: 60 },
             { name: "Shop (Street floor and sale basement)", netFactor: 3, doorCapacity: 100, horizontalExitCapacity: 100, rampMainExitCapacity: 100, rampSecondExitCapacity: 60, stairCapacity: 60 },
             { name: "Shop (Other floors)", netFactor: 6, doorCapacity: 100, horizontalExitCapacity: 100, rampMainExitCapacity: 100, rampSecondExitCapacity: 60, stairCapacity: 60 },
