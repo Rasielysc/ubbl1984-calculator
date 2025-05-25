@@ -6,6 +6,7 @@
     <title>UBBL Occupant Load & Capacity of Exit Calculator</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <style>
         /* Custom styles for the calculator */
         body {
@@ -144,6 +145,12 @@
 
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
                     <div>
+                        <label for="spaceName" class="input-label">
+                            Space Name (Optional)
+                        </label>
+                        <input type="text" id="spaceName" class="form-input" placeholder="e.g., Level 1 Office" />
+                    </div>
+                    <div>
                         <label for="purposeGroup" class="input-label">
                             Purpose Group
                         </label>
@@ -157,6 +164,9 @@
                         </label>
                         <input type="number" id="floorArea" class="form-input" placeholder="e.g., 1000" />
                     </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
                     <div>
                         <label for="numExits" class="input-label">
                             Number of <span id="exitTypeLabel"></span>
@@ -175,7 +185,7 @@
                         Copy <span id="copyButtonLabel"></span> Results
                     </button>
                     <button id="downloadResults" class="button-red w-full md:w-1/3 flex items-center justify-center">
-                        Download Results (CSV)
+                        Download Results (XLSX)
                     </button>
                 </div>
 
@@ -219,11 +229,6 @@
                                 <tr>
                                     <th>Purpose group</th>
                                     <th>Occupancy load (square metre per person)</th>
-                                    <th colspan="5">Capacity of exits (No. of persons per unit-Exit width (1) and - (1A))</th>
-                                </tr>
-                                <tr>
-                                    <th></th>
-                                    <th></th>
                                     <th>Doors</th>
                                     <th>Horizontal exit</th>
                                     <th>Ramp main exit</th>
@@ -279,7 +284,7 @@
                                 </tr>
                                 <tr>
                                     <td class="pl-4">Hospital Patient accommodation</td>
-                                    <td>24 gross</td>
+                                    <td>24 net</td>
                                     <td>30</td>
                                     <td>30</td>
                                     <td>30</td>
@@ -289,6 +294,15 @@
                                 <tr>
                                     <td>III. Other residential</td>
                                     <td></td>
+                                    <td></td>
+                                    <td></td>
+                                    <td></td>
+                                    <td></td>
+                                    <td></td>
+                                </tr>
+                                <tr>
+                                    <td class="pl-4">Flats</td>
+                                    <td>20 gross</td>
                                     <td>50</td>
                                     <td>50</td>
                                     <td>50</td>
@@ -296,22 +310,22 @@
                                     <td>30</td>
                                 </tr>
                                 <tr>
-                                    <td class="pl-4">Flats</td>
+                                    <td class="pl-4">General public areas in hotels</td>
                                     <td>24 gross</td>
-                                    <td></td>
-                                    <td></td>
-                                    <td></td>
-                                    <td></td>
-                                    <td></td>
+                                    <td>50</td>
+                                    <td>50</td>
+                                    <td>50</td>
+                                    <td>50</td>
+                                    <td>30</td>
                                 </tr>
                                 <tr>
-                                    <td class="pl-4">General public areas in hotels (bedroom in hotels at 2 person per room)</td>
+                                    <td class="pl-4">Hotels (bedroom in hotels at 2 person per room)</td>
                                     <td>24 gross</td>
-                                    <td></td>
-                                    <td></td>
-                                    <td></td>
-                                    <td></td>
-                                    <td></td>
+                                    <td>50</td>
+                                    <td>50</td>
+                                    <td>50</td>
+                                    <td>50</td>
+                                    <td>30</td>
                                 </tr>
                                 <tr>
                                     <td>IV. Office</td>
@@ -386,7 +400,7 @@
                                     <td>75</td>
                                 </tr>
                                 <tr>
-                                    <td class="pl-4">Standing space</td>
+                                    <td class="pl-4">Areas without fixed seating</td>
                                     <td>0.7 net</td>
                                     <td>100</td>
                                     <td>100</td>
@@ -444,25 +458,24 @@
     <script>
         // Data for different purpose groups, including net factor, stair capacity, and door capacity
         const purposeGroupData = [
-            { name: "Institutional - Classroom area", netFactor: 2, stairCapacity: 60, doorCapacity: 100 },
-            { name: "Institutional - Workshop and vocational areas", netFactor: 4.5, stairCapacity: 15, doorCapacity: 30 },
-            { name: "Institutional - Day nurseries with sleeping facilities", netFactor: 3.5, stairCapacity: 15, doorCapacity: 30 },
-            { name: "Institutional - Hospital (Patient accommodation)", netFactor: 24, stairCapacity: 15, doorCapacity: 30 },
-            { name: "Other residential", netFactor: 20, stairCapacity: 30, doorCapacity: 50 }, // This is a general "Other residential" entry based on image, combining Hotels/Flats general capacity
-            { name: "Other residential - Flats", netFactor: 24, stairCapacity: 30, doorCapacity: 50 },
-            { name: "Other residential - General public areas in hotels (bedroom in hotels at 2 person per room)", netFactor: 24, stairCapacity: 30, doorCapacity: 50 },
-            { name: "Office", netFactor: 10, stairCapacity: 60, doorCapacity: 100 },
-            { name: "Shop (Street floor and sale basement)", netFactor: 3, stairCapacity: 60, doorCapacity: 100 },
-            { name: "Shop (Other floors)", netFactor: 6, stairCapacity: 60, doorCapacity: 100 },
-            { name: "Shop (Storage and shipping)", netFactor: 10, stairCapacity: 60, doorCapacity: 100 },
-            { name: "Factory", netFactor: 10, stairCapacity: 60, doorCapacity: 100 },
-            { name: "Place of assembly - Areas of concentrated use without fixed seating", netFactor: 1.5, stairCapacity: 75, doorCapacity: 100 }, // Corrected name to match table
-            { name: "Place of assembly - Standing space", netFactor: 0.7, stairCapacity: 75, doorCapacity: 100 }, // Corrected name to match table, assuming 0.7 and 0.3 are standing space as per table for Place of Assembly
-            { name: "Place of assembly - Standing space (dense)", netFactor: 0.3, stairCapacity: 75, doorCapacity: 100 }, // Added a distinct name for 0.3
-            { name: "Storage and general - Car parks", netFactor: 20, stairCapacity: 60, doorCapacity: 100 },
-            { name: "Storage and general - Warehouse", netFactor: 30, stairCapacity: 60, doorCapacity: 100 }
+            { name: "Institutional - Classroom area", netFactor: 2, doorCapacity: 100, stairCapacity: 60 },
+            { name: "Institutional - Workshop and vocational areas", netFactor: 4.5, doorCapacity: null, stairCapacity: null }, // NR in image
+            { name: "Institutional - Day nurseries with sleeping facilities", netFactor: 3.5, doorCapacity: 30, stairCapacity: 15 },
+            { name: "Institutional - Hospital (Patient accommodation)", netFactor: 24, doorCapacity: 30, stairCapacity: 15 },
+            { name: "Other residential - Flats", netFactor: 20, doorCapacity: 50, stairCapacity: 30 },
+            { name: "Other residential - General public areas in hotels", netFactor: 24, doorCapacity: 50, stairCapacity: 30 },
+            { name: "Other residential - Hotels (bedroom in hotels at 2 person per room)", netFactor: 24, doorCapacity: 50, stairCapacity: 30 },
+            { name: "Office", netFactor: 10, doorCapacity: 100, stairCapacity: 60 },
+            { name: "Shop (Street floor and sale basement)", netFactor: 3, doorCapacity: 100, stairCapacity: 60 },
+            { name: "Shop (Other floors)", netFactor: 6, doorCapacity: 100, stairCapacity: 60 },
+            { name: "Shop (Storage and shipping)", netFactor: 10, doorCapacity: 100, stairCapacity: 60 },
+            { name: "Factory", netFactor: 10, doorCapacity: 100, stairCapacity: 60 }, // Corrected stairCapacity to 60
+            { name: "Place of assembly - Areas of concentrated use without fixed seating", netFactor: 1.5, doorCapacity: 100, stairCapacity: 75 },
+            { name: "Place of assembly - Areas without fixed seating", netFactor: 0.7, doorCapacity: 100, stairCapacity: 75 }, // Renamed from "Standing space" to match table
+            { name: "Place of assembly - Standing space", netFactor: 0.3, doorCapacity: 100, stairCapacity: 75 }, // Kept "Standing space" for 0.3 as it's distinct
+            { name: "Storage and general - Car parks", netFactor: 20, doorCapacity: 100, stairCapacity: 60 },
+            { name: "Storage and general - Warehouse", netFactor: 30, doorCapacity: 100, stairCapacity: 60 }
         ];
-
 
         const UNIT_WIDTH = 0.55; // Standard unit width for exit calculations
 
@@ -481,6 +494,7 @@
         const backToMainMenuFromCalc = document.getElementById("backToMainMenuFromCalc"); // Back button for calculator view
         const backToMainMenuFromInfo = document.getElementById("backToMainMenuFromInfo"); // Back button for info view
 
+        const spaceNameInput = document.getElementById("spaceName"); // New space name input
         const purposeGroupSelect = document.getElementById("purposeGroup");
         const floorAreaInput = document.getElementById("floorArea");
         const numExitsInput = document.getElementById("numExits");
@@ -528,6 +542,7 @@
             descriptionExitType.textContent = type.toLowerCase(); // Update description text
 
             // Reset inputs and results when switching calculator types
+            spaceNameInput.value = ''; // Clear space name
             numExitsInput.value = '';
             floorAreaInput.value = '';
             purposeGroupSelect.value = '';
@@ -565,6 +580,7 @@
 
         // Handles the calculation logic
         calculateCompliance.addEventListener("click", () => {
+            const spaceName = spaceNameInput.value.trim(); // Get space name
             const group = purposeGroupData.find(g => g.name === purposeGroupSelect.value);
             const area = parseFloat(floorAreaInput.value);
             const num = parseInt(numExitsInput.value);
@@ -605,149 +621,174 @@
             // Determine capacity per unit based on type (Stair or Door)
             const capacityPerUnit = currentType === 'Stair' ? group.stairCapacity : group.doorCapacity;
 
-            // Calculate Required Exit Units
-            const requiredExitUnits = occupancyLoad / capacityPerUnit;
-
-            // Calculate Required Width
-            const requiredWidth = requiredExitUnits * UNIT_WIDTH;
-
-            // Calculate Effective Width (total minus the largest exit)
-            const effectiveWidth = totalProvidedWidth - largestWidth;
-
-            // Determine compliance status
-            const passed = effectiveWidth >= requiredWidth;
-
-            // Format results for display
-            const resultsText = `${currentType} Width Calculation:
-Purpose Group: ${group.name}
-Floor Area: ${area} m²
-Number of ${currentType}s: ${num}
-
-Occupancy Load = ${area} m² / ${group.netFactor} = ${occupancyLoad} PAX
-Required Exit Units = ${occupancyLoad} PAX / ${capacityPerUnit} = ${requiredExitUnits.toFixed(2)} units
-Required Width = ${requiredExitUnits.toFixed(2)} units * ${UNIT_WIDTH}m/unit = ${requiredWidth.toFixed(2)}m
-
-Widths Provided:
-${widths.map((w, i) => `${currentType} ${i + 1}: ${w.toFixed(2)}m`).join('\n')}
-Total Provided Width: ${totalProvidedWidth.toFixed(2)}m
-Effective Width (excl. largest ${currentType}): ${effectiveWidth.toFixed(2)}m
-
-${passed ? 'Sufficient Width' : 'Insufficient Width'} (Required: ${requiredWidth.toFixed(2)}m)`;
-            
-            complianceResults.textContent = resultsText;
-
-            // Store structured results for download
-            lastCalculationResults = {
-                purposeGroup: group.name,
-                floorArea: area,
-                numExits: num,
-                exitType: currentType,
-                occupancyLoad: occupancyLoad,
-                requiredExitUnits: requiredExitUnits,
-                requiredWidth: requiredWidth,
-                providedWidths: widths,
-                totalProvidedWidth: totalProvidedWidth,
-                effectiveWidth: effectiveWidth,
-                complianceStatus: passed ? 'Sufficient Width' : 'Insufficient Width',
-                requiredWidthValue: requiredWidth // Store required width separately for easy access
-            };
-        });
-
-        // Handles copying results to clipboard
-        copyComplianceResults.addEventListener("click", () => {
-            navigator.clipboard.writeText(complianceResults.textContent)
-                .then(() => {
-                    copyComplianceResults.textContent = 'Copied!';
-                    setTimeout(() => {
-                        copyComplianceResults.textContent = `Copy ${currentType} Results`;
-                    }, 1500); // Reset button text after 1.5 seconds
-                })
-                .catch(err => {
-                    // Fallback for browsers that don't support clipboard API or if permission is denied
-                    console.error('Failed to copy text: ', err);
-                    // Using execCommand as a fallback for older environments or stricter iframe policies
-                    const tempTextArea = document.createElement('textarea');
-                    tempTextArea.value = complianceResults.textContent;
-                    document.body.appendChild(tempTextArea);
-                    tempTextArea.select();
-                    try {
-                        document.execCommand('copy');
-                        copyComplianceResults.textContent = 'Copied (Fallback)!';
-                        setTimeout(() => {
-                            copyComplianceResults.textContent = `Copy ${currentType} Results`;
-                        }, 1500);
-                    } catch (e) {
-                        alert('Copy failed. Please manually select and copy the text from the results box.');
-                    } finally {
-                        document.body.removeChild(tempTextArea);
-                    }
-                });
-        });
-
-        // Handles downloading results as a CSV file
-        downloadResultsButton.addEventListener("click", () => {
-            if (!lastCalculationResults) {
-                alert("Please perform a calculation first to generate results for download.");
+            // Handle NR (Not Required) capacities
+            if (capacityPerUnit === null) {
+                complianceResults.textContent = `Calculation not applicable for "${group.name}" for ${currentType}s (NR). Please select a different purpose group or a different exit type.`;
+                lastCalculationResults = null;
                 return;
             }
 
-            const data = lastCalculationResults;
-            let csvContent = "Parameter,Value\n"; // CSV header
+            // Calculate Required Exit Width
+            const requiredUnitExits = occupancyLoad / capacityPerUnit;
+            const requiredWidth = requiredUnitExits * UNIT_WIDTH;
 
-            // Add key-value pairs to CSV content
-            csvContent += `"Calculation Type","${data.exitType} Width Calculation"\n`;
-            csvContent += `"Purpose Group","${data.purposeGroup}"\n`;
-            csvContent += `"Floor Area (m²)","${data.floorArea}"\n`;
-            csvContent += `"Number of ${data.exitType}s","${data.numExits}"\n`;
-            csvContent += `"Occupancy Load (PAX)","${data.occupancyLoad}"\n`;
-            csvContent += `"Required Exit Units","${data.requiredExitUnits.toFixed(2)}"\n`;
-            csvContent += `"Required Width (m)","${data.requiredWidth.toFixed(2)}"\n`;
+            // Calculate Effective Width (excluding the largest door/stair)
+            const effectiveWidthExclLargest = totalProvidedWidth - largestWidth;
 
-            // Add individual widths
-            data.providedWidths.forEach((w, i) => {
-                csvContent += `"${data.exitType} ${i + 1} Width (m)","${w.toFixed(2)}"\n`;
-            });
+            let resultText = `${currentType} Width Calculation:\n`;
+            if (spaceName) {
+                resultText += `Space Name: ${spaceName}\n`;
+            }
+            resultText += `Purpose Group: ${group.name}\n`;
+            resultText += `Floor Area: ${area} m²\n`;
+            resultText += `Number of ${currentType}s: ${num}\n\n`;
 
-            csvContent += `"Total Provided Width (m)","${data.totalProvidedWidth.toFixed(2)}"\n`;
-            csvContent += `"Effective Width (excl. largest) (m)","${data.effectiveWidth.toFixed(2)}"\n`;
-            csvContent += `"Compliance Status","${data.complianceStatus}"\n`;
-            csvContent += `"Required Width for Compliance (m)","${data.requiredWidthValue.toFixed(2)}"\n`;
+            resultText += `Occupancy Load = ${area} m² / ${group.netFactor} = ${occupancyLoad} PAX\n`;
+            resultText += `Required Exit Units = ${occupancyLoad} PAX / ${capacityPerUnit} = ${requiredUnitExits.toFixed(2)} units\n`;
+            resultText += `Required Width = ${requiredUnitExits.toFixed(2)} units * ${UNIT_WIDTH}m/unit = ${requiredWidth.toFixed(2)}m\n\n`;
 
-            // Create a Blob from the CSV content
-            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-            const link = document.createElement("a");
-
-            // Check for download attribute support (modern browsers)
-            if (link.download !== undefined) {
-                const url = URL.createObjectURL(blob);
-                link.setAttribute("href", url);
-                link.setAttribute("download", `${data.exitType}_Compliance_Results.csv`); // Set filename
-                link.style.visibility = 'hidden'; // Hide the link
-                document.body.appendChild(link);
-                link.click(); // Programmatically click the link to trigger download
-                document.body.removeChild(link); // Clean up the link
-                URL.revokeObjectURL(url); // Release the object URL
+            resultText += `Widths Provided:\n`;
+            if (num > 0) {
+                widths.forEach((width, index) => {
+                    resultText += `${currentType} ${index + 1}: ${width.toFixed(2)}m\n`;
+                });
             } else {
-                // Fallback for older browsers
-                alert("Your browser does not support direct download. Please copy the text from the results box and paste it into a spreadsheet program, then save as a CSV file.");
-                // Optionally, open in a new window for manual copy
-                window.open('data:text/csv;charset=utf-8,' + encodeURIComponent(csvContent));
+                resultText += `No ${currentType}s entered.\n`;
+            }
+            resultText += `Total Provided Width: ${totalProvidedWidth.toFixed(2)}m\n`;
+            resultText += `Effective Width (excl. largest ${currentType}): ${effectiveWidthExclLargest.toFixed(2)}m\n\n`;
+
+
+            // Compliance check
+            const complianceStatus = totalProvidedWidth >= requiredWidth ? "Complies" : "Insufficient Width";
+            const statusEmoji = totalProvidedWidth >= requiredWidth ? "✅" : "❌";
+            resultText += `${statusEmoji} ${complianceStatus} (Required: ${requiredWidth.toFixed(2)}m)\n`;
+
+            complianceResults.textContent = resultText;
+
+            // Store results for XLSX download
+            lastCalculationResults = {
+                spaceName: spaceName,
+                purposeGroup: group.name,
+                floorArea: area,
+                numExits: num,
+                occupancyLoad: occupancyLoad,
+                capacityPerUnit: capacityPerUnit,
+                requiredUnitExits: requiredUnitExits,
+                requiredWidth: requiredWidth,
+                widths: widths,
+                totalProvidedWidth: totalProvidedWidth,
+                largestWidth: largestWidth, // Store largest width for effective calculation
+                effectiveWidthExclLargest: effectiveWidthExclLargest,
+                complianceStatus: complianceStatus,
+                difference: totalProvidedWidth - requiredWidth
+            };
+        });
+
+        // Copy results to clipboard
+        copyComplianceResults.addEventListener("click", () => {
+            if (complianceResults.textContent && complianceResults.textContent !== 'Results will appear here...') {
+                // Using document.execCommand('copy') for broader compatibility in iframes
+                const textarea = document.createElement('textarea');
+                textarea.value = complianceResults.textContent;
+                document.body.appendChild(textarea);
+                textarea.select();
+                try {
+                    document.execCommand('copy');
+                    // Replace alert with a temporary message in the UI
+                    const originalText = complianceResults.textContent;
+                    complianceResults.textContent = "Results copied to clipboard!";
+                    setTimeout(() => {
+                        complianceResults.textContent = originalText;
+                    }, 1500); // Message disappears after 1.5 seconds
+                } catch (err) {
+                    console.error('Failed to copy text: ', err);
+                    // Fallback for failed copy
+                    const originalText = complianceResults.textContent;
+                    complianceResults.textContent = "Failed to copy. Please copy manually.";
+                    setTimeout(() => {
+                        complianceResults.textContent = originalText;
+                    }, 2500);
+                } finally {
+                    document.body.removeChild(textarea);
+                }
+            } else {
+                const originalText = complianceResults.textContent;
+                complianceResults.textContent = "No results to copy yet. Please perform a calculation first.";
+                setTimeout(() => {
+                    complianceResults.textContent = originalText;
+                }, 2500);
             }
         });
 
-        // Event listeners for navigation buttons
+        // Download results as XLSX
+        downloadResultsButton.addEventListener("click", () => {
+            if (!lastCalculationResults) {
+                const originalText = complianceResults.textContent;
+                complianceResults.textContent = "No results to download yet. Please perform a calculation first.";
+                setTimeout(() => {
+                    complianceResults.textContent = originalText;
+                }, 2500);
+                return;
+            }
+
+            const results = lastCalculationResults;
+            const data = [];
+
+            // Add main calculation details
+            data.push(["Calculation Type", `${currentType} Width Calculation`]);
+            if (results.spaceName) {
+                data.push(["Space Name", results.spaceName]);
+            }
+            data.push(["Purpose Group", results.purposeGroup]);
+            data.push(["Floor Area (m²)", results.floorArea]);
+            data.push([`Number of ${currentType}s`, results.numExits]);
+            data.push([]); // Empty row for separation
+
+            data.push(["Occupancy Load (PAX)", results.occupancyLoad]);
+            data.push(["Required Exit Units", results.requiredUnitExits.toFixed(2)]);
+            data.push([`Required Total ${currentType} Width (m)`, results.requiredWidth.toFixed(2)]);
+            data.push([]); // Empty row for separation
+
+            data.push(["Widths Provided:"]);
+            results.widths.forEach((width, index) => {
+                // Modified to put label and value in separate columns for XLSX
+                data.push([`${currentType} ${index + 1}`, `${width.toFixed(2)}m`]);
+            });
+            data.push(["Total Provided Width (m)", results.totalProvidedWidth.toFixed(2)]);
+            data.push([`Effective Width (excl. largest ${currentType}) (m)`, results.effectiveWidthExclLargest.toFixed(2)]);
+            data.push([]); // Empty row for separation
+
+            const statusText = `${results.complianceStatus} (Required: ${results.requiredWidth.toFixed(2)}m)`;
+            data.push(["Compliance Status", statusText]);
+            data.push(["Difference (m)", results.difference.toFixed(2)]);
+
+
+            // Create a new workbook and a worksheet
+            const wb = XLSX.utils.book_new();
+            const ws = XLSX.utils.aoa_to_sheet(data);
+
+            // Add the worksheet to the workbook
+            XLSX.utils.book_append_sheet(wb, ws, "Compliance Results");
+
+            // Write the workbook and trigger download
+            XLSX.writeFile(wb, `${currentType.toLowerCase()}_compliance_results.xlsx`);
+        });
+
+
+        // Event Listeners for navigation buttons
         goToStairCalculator.addEventListener("click", () => showCalculatorView("Stair"));
         goToDoorCalculator.addEventListener("click", () => showCalculatorView("Door"));
-        goToExitWidthInfo.addEventListener("click", showExitWidthInfoView); // New event listener for info button
+        goToExitWidthInfo.addEventListener("click", showExitWidthInfoView); // New info button listener
 
         backToMainMenuFromCalc.addEventListener("click", showMainMenuView); // Back button for calculator
-        backToMainMenuFromInfo.addEventListener("click", showMainMenuView); // Back button for info page
+        backToMainMenuFromInfo.addEventListener("click", showMainMenuView); // Back button for info view
 
-        // Initialize the calculator on page load
-        window.onload = () => {
+        // Initialize the calculator
+        document.addEventListener("DOMContentLoaded", () => {
             populatePurposeGroups();
-            showMainMenuView(); // Start with the main menu visible
-        };
+            showMainMenuView(); // Start with the main menu
+        });
     </script>
 </body>
 </html>
