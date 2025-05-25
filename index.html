@@ -1,0 +1,753 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>UBBL Occupant Load & Capacity of Exit Calculator</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        /* Custom styles for the calculator */
+        body {
+            font-family: 'Inter', sans-serif;
+            background-image: url('http://googleusercontent.com/image_generation_content/uploaded:ubbl_uniform_building_by_laws_1712756726_d2a55344_progressive-1153024906.jpg-428a9742-a7b1-4206-b501-ab9d80a5311c');
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+            color: #374151; /* Default text color */
+        }
+        .overlay {
+            background-color: rgba(244, 247, 246, 0.5);
+            min-height: 100vh;
+            padding: 1rem;
+        }
+        .section {
+            background-color: #fff;
+            padding: 1.5rem;
+            border-radius: 0.75rem;
+            box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1), 0 4px 6px -2px rgba(0,0,0,0.05);
+            animation: fadeIn 0.5s ease-out; /* Fade-in animation for sections */
+        }
+        .button-red {
+            background-color: #b91c1c; /* Dark red for primary actions */
+            color: white;
+            font-weight: 600;
+            padding: 0.75rem 1.5rem; /* Increased padding for better click area */
+            border-radius: 0.5rem;
+            transition: background-color 0.3s ease, transform 0.2s ease, box-shadow 0.3s ease; /* Added transform and shadow transitions */
+            letter-spacing: 0.05em; /* Slightly increased letter spacing */
+        }
+        .button-red:hover {
+            background-color: #991b1b; /* Slightly darker red on hover */
+            transform: translateY(-2px); /* Slight lift on hover */
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -1px rgba(0,0,0,0.06); /* Subtle shadow on hover */
+        }
+        .button-red:active {
+            transform: translateY(0); /* Reset on click */
+            box-shadow: none; /* No shadow on active */
+        }
+        .input-label {
+            font-weight: 500;
+            margin-bottom: 0.25rem;
+            display: block;
+            color: #374151; /* Darker gray for labels */
+        }
+        .form-input, .form-select {
+            width: 100%;
+            padding: 0.65rem; /* Slightly more padding */
+            border: 1px solid #d1d5db; /* Light gray border */
+            border-radius: 0.5rem;
+            transition: border-color 0.3s ease, box-shadow 0.3s ease; /* Added transitions for input fields */
+        }
+        .form-input:focus, .form-select:focus {
+            border-color: #b91c1c; /* Red border on focus */
+            box-shadow: 0 0 0 3px rgba(185, 28, 28, 0.3); /* Red shadow on focus */
+            outline: none;
+        }
+        .results-pre {
+            background: #f9fafb; /* Very light gray background for results */
+            border: 1px solid #e5e7eb; /* Light border for results */
+            padding: 1rem;
+            border-radius: 0.5rem;
+            font-family: monospace; /* Monospace font for code-like output */
+            white-space: pre-wrap; /* Preserve whitespace and wrap text */
+            color: #1f2937; /* Dark text for readability */
+            overflow-x: auto; /* Allow horizontal scrolling for long lines */
+        }
+        .hidden-view {
+            display: none; /* Class to hide sections */
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        /* Table specific styles */
+        .ubbl-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 1.5rem;
+            font-size: 0.9em;
+        }
+        .ubbl-table th, .ubbl-table td {
+            border: 1px solid #e5e7eb;
+            padding: 0.75rem 0.5rem;
+            text-align: left;
+            vertical-align: top;
+        }
+        .ubbl-table th {
+            background-color: #f3f4f6;
+            font-weight: 600;
+            color: #374151;
+        }
+        .ubbl-table tbody tr:nth-child(odd) {
+            background-color: #f9fafb;
+        }
+        .ubbl-table tbody tr:hover {
+            background-color: #f0f4f7;
+        }
+    </style>
+</head>
+<body class="selection:bg-red-200 selection:text-red-800">
+    <div class="overlay">
+        <div class="max-w-5xl mx-auto space-y-8 py-8">
+            <h1 class="text-3xl md:text-4xl font-extrabold text-center text-gray-800 mb-6">
+                <span class="text-red-700">UBBL Exit Width</span> Compliance Calculator
+            </h1>
+
+            <div id="mainMenuView" class="section text-center">
+                <h2 class="text-2xl font-bold text-red-700 mb-4">
+                    Select Your Calculation
+                </h2>
+                <p class="text-gray-600 mb-6 max-w-2xl mx-auto">
+                    Quickly determine the required exit widths for stairs or doors based on building purpose group and floor area, ensuring compliance with fire safety regulations.
+                </p>
+                <div class="flex flex-col md:flex-row justify-center gap-6">
+                    <button id="goToExitWidthInfo" class="button-red w-full md:w-1/3 flex items-center justify-center">
+                        What is Exit Width?
+                    </button>
+                    <button id="goToStairCalculator" class="button-red w-full md:w-1/3 flex items-center justify-center">
+                        Stair Width Calculator
+                    </button>
+                    <button id="goToDoorCalculator" class="button-red w-full md:w-1/3 flex items-center justify-center">
+                        Door Width Calculator
+                    </button>
+                </div>
+            </div>
+
+            <div id="calculatorView" class="section hidden-view">
+                <h2 class="text-2xl font-bold text-red-700 mb-4 text-center">
+                    <span id="calculatorTitle"></span> Width Calculation
+                </h2>
+                <p class="text-gray-600 mb-6 max-w-2xl mx-auto text-center">
+                    Input the necessary details below to calculate the required width for your <span id="descriptionExitType"></span>. All calculations are based on UBBL 1984 seventh schedule.
+                </p>
+
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+                    <div>
+                        <label for="purposeGroup" class="input-label">
+                            Purpose Group
+                        </label>
+                        <select id="purposeGroup" class="form-select">
+                            <option value="">-- Select Purpose Group --</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label for="floorArea" class="input-label">
+                            Floor Area (m²)
+                        </label>
+                        <input type="number" id="floorArea" class="form-input" placeholder="e.g., 1000" />
+                    </div>
+                    <div>
+                        <label for="numExits" class="input-label">
+                            Number of <span id="exitTypeLabel"></span>
+                        </label>
+                        <input type="number" id="numExits" class="form-input" placeholder="e.g., 2" min="0" />
+                    </div>
+                </div>
+
+                <div id="exitWidthsContainer" class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6"></div>
+
+                <div class="flex flex-col md:flex-row gap-4 mb-6">
+                    <button id="calculateCompliance" class="button-red w-full md:w-1/3 flex items-center justify-center">
+                        Calculate <span id="calculateButtonLabel"></span>
+                    </button>
+                    <button id="copyComplianceResults" class="button-red w-full md:w-1/3 flex items-center justify-center">
+                        Copy <span id="copyButtonLabel"></span> Results
+                    </button>
+                    <button id="downloadResults" class="button-red w-full md:w-1/3 flex items-center justify-center">
+                        Download Results (CSV)
+                    </button>
+                </div>
+
+                <div>
+                    <h3 class="text-xl font-semibold text-gray-700 mb-3">
+                        <span id="resultsTypeLabel"></span> Calculation Results:
+                    </h3>
+                    <pre id="complianceResults" class="results-pre">Results will appear here...</pre>
+                </div>
+
+                <button id="backToMainMenuFromCalc" class="button-red mt-8 bg-gray-500 hover:bg-gray-600 w-full flex items-center justify-center">
+                    Back to Main Menu
+                </button>
+            </div>
+
+            <div id="exitWidthInfoView" class="section hidden-view">
+                <h2 class="text-2xl font-bold text-red-700 mb-4 text-center">
+                    What is Exit Width?
+                </h2>
+                <div class="text-gray-700 mb-6 space-y-4">
+                    <p class="text-gray-600">
+                        "Exit width" of "capacity of an exit" in the UBBL 7th schedule is simply how wide your exits (stairs, doors) must be to get everyone out safely.
+                    </p>
+                    <p class="font-bold">It's calculated like this:</p>
+                    <ul class="list-disc list-inside ml-4 space-y-2">
+                        <li>Figure out how many people are there (Occupancy Load).</li>
+                        <li>Determine how many "exit lanes" are needed for those people. (Stairs and doors have different "lane capacities.")</li>
+                        <li>Multiply those "lanes" by a standard lane width (0.55m) to get the total required width.</li>
+                    </ul>
+                    <p class="font-bold mt-4">Example:</p>
+                    <div class="bg-gray-50 p-4 rounded-lg border border-gray-200">
+                        <p>If your office floor has an Occupancy Load of 100 people, and stairs can handle 60 people per "lane":</p>
+                        <p class="mt-2">You need `100 / 60 = 1.67 exit lanes.`</p>
+                        <p>So, the required stair width is `1.67 lanes * 0.55m/lane = 0.92 meters.`</p>
+                    </div>
+
+                    <h3 class="text-xl font-semibold text-gray-700 mt-8 mb-4">UBBL 7th Schedule: Occupancy Load and Capacity of Exits</h3>
+                    <div class="overflow-x-auto">
+                        <table class="ubbl-table">
+                            <thead>
+                                <tr>
+                                    <th>Purpose group</th>
+                                    <th>Occupancy load (square metre per person)</th>
+                                    <th colspan="5">Capacity of exits (No. of persons per unit-Exit width (1) and - (1A))</th>
+                                </tr>
+                                <tr>
+                                    <th></th>
+                                    <th></th>
+                                    <th>Doors</th>
+                                    <th>Horizontal exit</th>
+                                    <th>Ramp main exit</th>
+                                    <th>Ramp second exit</th>
+                                    <th>Stairs</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>I. Small residential</td>
+                                    <td>NR</td>
+                                    <td>NR</td>
+                                    <td>NR</td>
+                                    <td>NR</td>
+                                    <td>NR</td>
+                                    <td>NR</td>
+                                </tr>
+                                <tr>
+                                    <td>II. Institutional</td>
+                                    <td></td>
+                                    <td></td>
+                                    <td></td>
+                                    <td></td>
+                                    <td></td>
+                                    <td></td>
+                                </tr>
+                                <tr>
+                                    <td class="pl-4">Classroom area</td>
+                                    <td>2 net</td>
+                                    <td>100</td>
+                                    <td>100</td>
+                                    <td>100</td>
+                                    <td>60</td>
+                                    <td>60</td>
+                                </tr>
+                                <tr>
+                                    <td class="pl-4">Workshop and vocational areas</td>
+                                    <td>4.5 net</td>
+                                    <td>NR</td>
+                                    <td>NR</td>
+                                    <td>NR</td>
+                                    <td>NR</td>
+                                    <td>NR</td>
+                                </tr>
+                                <tr>
+                                    <td class="pl-4">Day nurseries with sleeping facilities</td>
+                                    <td>3.5 net</td>
+                                    <td>30</td>
+                                    <td>30</td>
+                                    <td>30</td>
+                                    <td>30</td>
+                                    <td>15</td>
+                                </tr>
+                                <tr>
+                                    <td class="pl-4">Hospital Patient accommodation</td>
+                                    <td>24 gross</td>
+                                    <td>30</td>
+                                    <td>30</td>
+                                    <td>30</td>
+                                    <td>30</td>
+                                    <td>15</td>
+                                </tr>
+                                <tr>
+                                    <td>III. Other residential</td>
+                                    <td></td>
+                                    <td>50</td>
+                                    <td>50</td>
+                                    <td>50</td>
+                                    <td>50</td>
+                                    <td>30</td>
+                                </tr>
+                                <tr>
+                                    <td class="pl-4">Flats</td>
+                                    <td>24 gross</td>
+                                    <td></td>
+                                    <td></td>
+                                    <td></td>
+                                    <td></td>
+                                    <td></td>
+                                </tr>
+                                <tr>
+                                    <td class="pl-4">General public areas in hotels (bedroom in hotels at 2 person per room)</td>
+                                    <td>24 gross</td>
+                                    <td></td>
+                                    <td></td>
+                                    <td></td>
+                                    <td></td>
+                                    <td></td>
+                                </tr>
+                                <tr>
+                                    <td>IV. Office</td>
+                                    <td>10 gross</td>
+                                    <td>100</td>
+                                    <td>100</td>
+                                    <td>100</td>
+                                    <td>60</td>
+                                    <td>60</td>
+                                </tr>
+                                <tr>
+                                    <td>V. Shop</td>
+                                    <td></td>
+                                    <td></td>
+                                    <td></td>
+                                    <td></td>
+                                    <td></td>
+                                    <td></td>
+                                </tr>
+                                <tr>
+                                    <td class="pl-4">Street floor and sale basement</td>
+                                    <td>3 gross</td>
+                                    <td>100</td>
+                                    <td>100</td>
+                                    <td>100</td>
+                                    <td>60</td>
+                                    <td>60</td>
+                                </tr>
+                                <tr>
+                                    <td class="pl-4">Other floors</td>
+                                    <td>6 gross</td>
+                                    <td>100</td>
+                                    <td>100</td>
+                                    <td>100</td>
+                                    <td>60</td>
+                                    <td>60</td>
+                                </tr>
+                                <tr>
+                                    <td class="pl-4">Storage and shipping</td>
+                                    <td>10 gross</td>
+                                    <td>100</td>
+                                    <td>100</td>
+                                    <td>100</td>
+                                    <td>60</td>
+                                    <td>60</td>
+                                </tr>
+                                <tr>
+                                    <td>VI. Factory</td>
+                                    <td>10 gross</td>
+                                    <td>100</td>
+                                    <td>100</td>
+                                    <td>100</td>
+                                    <td>60</td>
+                                    <td>60</td>
+                                </tr>
+                                <tr>
+                                    <td>VII. Place of assembly</td>
+                                    <td></td>
+                                    <td></td>
+                                    <td></td>
+                                    <td></td>
+                                    <td></td>
+                                    <td></td>
+                                </tr>
+                                <tr>
+                                    <td class="pl-4">Areas of concentrated use without fixed seating</td>
+                                    <td>1.5 net</td>
+                                    <td>100</td>
+                                    <td>100</td>
+                                    <td>100</td>
+                                    <td>75</td>
+                                    <td>75</td>
+                                </tr>
+                                <tr>
+                                    <td class="pl-4">Standing space</td>
+                                    <td>0.7 net</td>
+                                    <td>100</td>
+                                    <td>100</td>
+                                    <td>100</td>
+                                    <td>75</td>
+                                    <td>75</td>
+                                </tr>
+                                <tr>
+                                    <td class="pl-4">Standing space</td>
+                                    <td>0.3 net</td>
+                                    <td>100</td>
+                                    <td>100</td>
+                                    <td>100</td>
+                                    <td>75</td>
+                                    <td>75</td>
+                                </tr>
+                                <tr>
+                                    <td>VIII. Storage and general</td>
+                                    <td></td>
+                                    <td></td>
+                                    <td></td>
+                                    <td></td>
+                                    <td></td>
+                                    <td></td>
+                                </tr>
+                                <tr>
+                                    <td class="pl-4">Car parks</td>
+                                    <td>20 gross</td>
+                                    <td>100</td>
+                                    <td>100</td>
+                                    <td>100</td>
+                                    <td>60</td>
+                                    <td>60</td>
+                                </tr>
+                                <tr>
+                                    <td class="pl-4">Warehouse</td>
+                                    <td>30 gross</td>
+                                    <td>100</td>
+                                    <td>100</td>
+                                    <td>100</td>
+                                    <td>60</td>
+                                    <td>60</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                <button id="backToMainMenuFromInfo" class="button-red mt-8 bg-gray-500 hover:bg-gray-600 w-full flex items-center justify-center">
+                    Back to Main Menu
+                </button>
+            </div>
+            </div>
+    </div>
+
+    <script>
+        // Data for different purpose groups, including net factor, stair capacity, and door capacity
+        const purposeGroupData = [
+            { name: "Institutional - Classroom area", netFactor: 2, stairCapacity: 60, doorCapacity: 100 },
+            { name: "Institutional - Workshop and vocational areas", netFactor: 4.5, stairCapacity: 15, doorCapacity: 30 },
+            { name: "Institutional - Day nurseries with sleeping facilities", netFactor: 3.5, stairCapacity: 15, doorCapacity: 30 },
+            { name: "Institutional - Hospital (Patient accommodation)", netFactor: 24, stairCapacity: 15, doorCapacity: 30 },
+            { name: "Other residential", netFactor: 20, stairCapacity: 30, doorCapacity: 50 }, // This is a general "Other residential" entry based on image, combining Hotels/Flats general capacity
+            { name: "Other residential - Flats", netFactor: 24, stairCapacity: 30, doorCapacity: 50 },
+            { name: "Other residential - General public areas in hotels (bedroom in hotels at 2 person per room)", netFactor: 24, stairCapacity: 30, doorCapacity: 50 },
+            { name: "Office", netFactor: 10, stairCapacity: 60, doorCapacity: 100 },
+            { name: "Shop (Street floor and sale basement)", netFactor: 3, stairCapacity: 60, doorCapacity: 100 },
+            { name: "Shop (Other floors)", netFactor: 6, stairCapacity: 60, doorCapacity: 100 },
+            { name: "Shop (Storage and shipping)", netFactor: 10, stairCapacity: 60, doorCapacity: 100 },
+            { name: "Factory", netFactor: 10, stairCapacity: 60, doorCapacity: 100 },
+            { name: "Place of assembly - Areas of concentrated use without fixed seating", netFactor: 1.5, stairCapacity: 75, doorCapacity: 100 }, // Corrected name to match table
+            { name: "Place of assembly - Standing space", netFactor: 0.7, stairCapacity: 75, doorCapacity: 100 }, // Corrected name to match table, assuming 0.7 and 0.3 are standing space as per table for Place of Assembly
+            { name: "Place of assembly - Standing space (dense)", netFactor: 0.3, stairCapacity: 75, doorCapacity: 100 }, // Added a distinct name for 0.3
+            { name: "Storage and general - Car parks", netFactor: 20, stairCapacity: 60, doorCapacity: 100 },
+            { name: "Storage and general - Warehouse", netFactor: 30, stairCapacity: 60, doorCapacity: 100 }
+        ];
+
+
+        const UNIT_WIDTH = 0.55; // Standard unit width for exit calculations
+
+        let currentType = ""; // Stores "Stair" or "Door"
+        let lastCalculationResults = null; // Stores the last calculated results for download
+
+        // Get references to HTML elements
+        const mainMenuView = document.getElementById("mainMenuView");
+        const calculatorView = document.getElementById("calculatorView");
+        const exitWidthInfoView = document.getElementById("exitWidthInfoView"); // New info view
+
+        const goToStairCalculator = document.getElementById("goToStairCalculator");
+        const goToDoorCalculator = document.getElementById("goToDoorCalculator");
+        const goToExitWidthInfo = document.getElementById("goToExitWidthInfo"); // New info button
+
+        const backToMainMenuFromCalc = document.getElementById("backToMainMenuFromCalc"); // Back button for calculator view
+        const backToMainMenuFromInfo = document.getElementById("backToMainMenuFromInfo"); // Back button for info view
+
+        const purposeGroupSelect = document.getElementById("purposeGroup");
+        const floorAreaInput = document.getElementById("floorArea");
+        const numExitsInput = document.getElementById("numExits");
+        const exitTypeLabel = document.getElementById("exitTypeLabel");
+        const exitWidthsContainer = document.getElementById("exitWidthsContainer");
+        const calculateCompliance = document.getElementById("calculateCompliance");
+        const complianceResults = document.getElementById("complianceResults");
+        const calculateButtonLabel = document.getElementById("calculateButtonLabel");
+        const resultsTypeLabel = document.getElementById("resultsTypeLabel");
+        const copyComplianceResults = document.getElementById("copyComplianceResults");
+        const copyButtonLabel = document.getElementById("copyButtonLabel");
+        const downloadResultsButton = document.getElementById("downloadResults");
+        const calculatorTitle = document.getElementById("calculatorTitle");
+        const descriptionExitType = document.getElementById("descriptionExitType");
+
+
+        // Populates the Purpose Group dropdown with data
+        function populatePurposeGroups() {
+            purposeGroupSelect.innerHTML = '<option value="">-- Select Purpose Group --</option>';
+            purposeGroupData.forEach(g => {
+                const option = document.createElement("option");
+                option.value = g.name;
+                option.textContent = g.name;
+                purposeGroupSelect.appendChild(option);
+            });
+        }
+
+        // Hides all views
+        function hideAllViews() {
+            mainMenuView.classList.add("hidden-view");
+            calculatorView.classList.add("hidden-view");
+            exitWidthInfoView.classList.add("hidden-view");
+        }
+
+        // Shows the calculator view and sets the type (Stair or Door)
+        function showCalculatorView(type) {
+            hideAllViews(); // Hide all views first
+            currentType = type;
+            calculatorView.classList.remove("hidden-view"); // Show calculator
+            exitTypeLabel.textContent = `${type}s`; // Update label for number of exits
+            calculateButtonLabel.textContent = type; // Update calculate button label
+            resultsTypeLabel.textContent = type; // Update results section label
+            copyButtonLabel.textContent = type; // Update copy button label
+            calculatorTitle.textContent = type; // Update title
+            descriptionExitType.textContent = type.toLowerCase(); // Update description text
+
+            // Reset inputs and results when switching calculator types
+            numExitsInput.value = '';
+            floorAreaInput.value = '';
+            purposeGroupSelect.value = '';
+            exitWidthsContainer.innerHTML = '';
+            complianceResults.textContent = 'Results will appear here...';
+            lastCalculationResults = null; // Clear previous results
+        }
+
+        // Shows the main menu view
+        function showMainMenuView() {
+            hideAllViews(); // Hide all views first
+            mainMenuView.classList.remove("hidden-view"); // Show main menu
+        }
+
+        // Shows the Exit Width Info view
+        function showExitWidthInfoView() {
+            hideAllViews(); // Hide all views first
+            exitWidthInfoView.classList.remove("hidden-view"); // Show info view
+        }
+
+        // Dynamically generates input fields for exit widths based on the number of exits
+        numExitsInput.addEventListener("input", () => {
+            const count = parseInt(numExitsInput.value) || 0;
+            exitWidthsContainer.innerHTML = ''; // Clear existing inputs
+            for (let i = 1; i <= count; i++) {
+                // Add a new input field for each exit width
+                exitWidthsContainer.innerHTML += `
+                    <div>
+                        <label class="input-label">Width of ${currentType} ${i} (m):</label>
+                        <input type="number" class="form-input" id="${currentType}Width${i}" value="0.9" min="0" step="0.01">
+                    </div>
+                `;
+            }
+        });
+
+        // Handles the calculation logic
+        calculateCompliance.addEventListener("click", () => {
+            const group = purposeGroupData.find(g => g.name === purposeGroupSelect.value);
+            const area = parseFloat(floorAreaInput.value);
+            const num = parseInt(numExitsInput.value);
+
+            // Basic validation
+            if (!group || isNaN(area) || area <= 0 || isNaN(num) || num < 0) {
+                complianceResults.textContent = 'Please fill in all fields correctly: select a Purpose Group, enter a positive Floor Area, and a non-negative Number of Exits.';
+                lastCalculationResults = null;
+                return;
+            }
+
+            let widths = [];
+            let totalProvidedWidth = 0;
+            let largestWidth = 0;
+
+            // Collect individual exit widths
+            for (let i = 1; i <= num; i++) {
+                const inputElement = document.getElementById(`${currentType}Width${i}`);
+                if (!inputElement) {
+                    complianceResults.textContent = `Error: Could not find width input for ${currentType} ${i}. Please re-enter number of exits.`;
+                    lastCalculationResults = null;
+                    return;
+                }
+                const val = parseFloat(inputElement.value);
+                if (isNaN(val) || val < 0) {
+                    complianceResults.textContent = `Error: Invalid width entered for ${currentType} ${i}. Please enter a positive number.`;
+                    lastCalculationResults = null;
+                    return;
+                }
+                widths.push(val);
+                totalProvidedWidth += val;
+                if (val > largestWidth) largestWidth = val;
+            }
+
+            // Calculate Occupancy Load
+            const occupancyLoad = Math.ceil(area / group.netFactor);
+
+            // Determine capacity per unit based on type (Stair or Door)
+            const capacityPerUnit = currentType === 'Stair' ? group.stairCapacity : group.doorCapacity;
+
+            // Calculate Required Exit Units
+            const requiredExitUnits = occupancyLoad / capacityPerUnit;
+
+            // Calculate Required Width
+            const requiredWidth = requiredExitUnits * UNIT_WIDTH;
+
+            // Calculate Effective Width (total minus the largest exit)
+            const effectiveWidth = totalProvidedWidth - largestWidth;
+
+            // Determine compliance status
+            const passed = effectiveWidth >= requiredWidth;
+
+            // Format results for display
+            const resultsText = `${currentType} Width Calculation:
+Purpose Group: ${group.name}
+Floor Area: ${area} m²
+Number of ${currentType}s: ${num}
+
+Occupancy Load = ${area} m² / ${group.netFactor} = ${occupancyLoad} PAX
+Required Exit Units = ${occupancyLoad} PAX / ${capacityPerUnit} = ${requiredExitUnits.toFixed(2)} units
+Required Width = ${requiredExitUnits.toFixed(2)} units * ${UNIT_WIDTH}m/unit = ${requiredWidth.toFixed(2)}m
+
+Widths Provided:
+${widths.map((w, i) => `${currentType} ${i + 1}: ${w.toFixed(2)}m`).join('\n')}
+Total Provided Width: ${totalProvidedWidth.toFixed(2)}m
+Effective Width (excl. largest ${currentType}): ${effectiveWidth.toFixed(2)}m
+
+${passed ? 'Sufficient Width' : 'Insufficient Width'} (Required: ${requiredWidth.toFixed(2)}m)`;
+            
+            complianceResults.textContent = resultsText;
+
+            // Store structured results for download
+            lastCalculationResults = {
+                purposeGroup: group.name,
+                floorArea: area,
+                numExits: num,
+                exitType: currentType,
+                occupancyLoad: occupancyLoad,
+                requiredExitUnits: requiredExitUnits,
+                requiredWidth: requiredWidth,
+                providedWidths: widths,
+                totalProvidedWidth: totalProvidedWidth,
+                effectiveWidth: effectiveWidth,
+                complianceStatus: passed ? 'Sufficient Width' : 'Insufficient Width',
+                requiredWidthValue: requiredWidth // Store required width separately for easy access
+            };
+        });
+
+        // Handles copying results to clipboard
+        copyComplianceResults.addEventListener("click", () => {
+            navigator.clipboard.writeText(complianceResults.textContent)
+                .then(() => {
+                    copyComplianceResults.textContent = 'Copied!';
+                    setTimeout(() => {
+                        copyComplianceResults.textContent = `Copy ${currentType} Results`;
+                    }, 1500); // Reset button text after 1.5 seconds
+                })
+                .catch(err => {
+                    // Fallback for browsers that don't support clipboard API or if permission is denied
+                    console.error('Failed to copy text: ', err);
+                    // Using execCommand as a fallback for older environments or stricter iframe policies
+                    const tempTextArea = document.createElement('textarea');
+                    tempTextArea.value = complianceResults.textContent;
+                    document.body.appendChild(tempTextArea);
+                    tempTextArea.select();
+                    try {
+                        document.execCommand('copy');
+                        copyComplianceResults.textContent = 'Copied (Fallback)!';
+                        setTimeout(() => {
+                            copyComplianceResults.textContent = `Copy ${currentType} Results`;
+                        }, 1500);
+                    } catch (e) {
+                        alert('Copy failed. Please manually select and copy the text from the results box.');
+                    } finally {
+                        document.body.removeChild(tempTextArea);
+                    }
+                });
+        });
+
+        // Handles downloading results as a CSV file
+        downloadResultsButton.addEventListener("click", () => {
+            if (!lastCalculationResults) {
+                alert("Please perform a calculation first to generate results for download.");
+                return;
+            }
+
+            const data = lastCalculationResults;
+            let csvContent = "Parameter,Value\n"; // CSV header
+
+            // Add key-value pairs to CSV content
+            csvContent += `"Calculation Type","${data.exitType} Width Calculation"\n`;
+            csvContent += `"Purpose Group","${data.purposeGroup}"\n`;
+            csvContent += `"Floor Area (m²)","${data.floorArea}"\n`;
+            csvContent += `"Number of ${data.exitType}s","${data.numExits}"\n`;
+            csvContent += `"Occupancy Load (PAX)","${data.occupancyLoad}"\n`;
+            csvContent += `"Required Exit Units","${data.requiredExitUnits.toFixed(2)}"\n`;
+            csvContent += `"Required Width (m)","${data.requiredWidth.toFixed(2)}"\n`;
+
+            // Add individual widths
+            data.providedWidths.forEach((w, i) => {
+                csvContent += `"${data.exitType} ${i + 1} Width (m)","${w.toFixed(2)}"\n`;
+            });
+
+            csvContent += `"Total Provided Width (m)","${data.totalProvidedWidth.toFixed(2)}"\n`;
+            csvContent += `"Effective Width (excl. largest) (m)","${data.effectiveWidth.toFixed(2)}"\n`;
+            csvContent += `"Compliance Status","${data.complianceStatus}"\n`;
+            csvContent += `"Required Width for Compliance (m)","${data.requiredWidthValue.toFixed(2)}"\n`;
+
+            // Create a Blob from the CSV content
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement("a");
+
+            // Check for download attribute support (modern browsers)
+            if (link.download !== undefined) {
+                const url = URL.createObjectURL(blob);
+                link.setAttribute("href", url);
+                link.setAttribute("download", `${data.exitType}_Compliance_Results.csv`); // Set filename
+                link.style.visibility = 'hidden'; // Hide the link
+                document.body.appendChild(link);
+                link.click(); // Programmatically click the link to trigger download
+                document.body.removeChild(link); // Clean up the link
+                URL.revokeObjectURL(url); // Release the object URL
+            } else {
+                // Fallback for older browsers
+                alert("Your browser does not support direct download. Please copy the text from the results box and paste it into a spreadsheet program, then save as a CSV file.");
+                // Optionally, open in a new window for manual copy
+                window.open('data:text/csv;charset=utf-8,' + encodeURIComponent(csvContent));
+            }
+        });
+
+        // Event listeners for navigation buttons
+        goToStairCalculator.addEventListener("click", () => showCalculatorView("Stair"));
+        goToDoorCalculator.addEventListener("click", () => showCalculatorView("Door"));
+        goToExitWidthInfo.addEventListener("click", showExitWidthInfoView); // New event listener for info button
+
+        backToMainMenuFromCalc.addEventListener("click", showMainMenuView); // Back button for calculator
+        backToMainMenuFromInfo.addEventListener("click", showMainMenuView); // Back button for info page
+
+        // Initialize the calculator on page load
+        window.onload = () => {
+            populatePurposeGroups();
+            showMainMenuView(); // Start with the main menu visible
+        };
+    </script>
+</body>
+</html>
