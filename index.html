@@ -227,8 +227,11 @@
                         <table class="ubbl-table">
                             <thead>
                                 <tr>
-                                    <th>Purpose group</th>
-                                    <th>Occupancy load (square metre per person)</th>
+                                    <th rowspan="2">Purpose group</th>
+                                    <th rowspan="2">Occupancy load (square metre per person)</th>
+                                    <th colspan="5">Capacity of exits (No. of persons per unit-Exit width (1) and - (1A))</th>
+                                </tr>
+                                <tr>
                                     <th>Doors</th>
                                     <th>Horizontal exit</th>
                                     <th>Ramp main exit</th>
@@ -458,23 +461,23 @@
     <script>
         // Data for different purpose groups, including net factor, stair capacity, and door capacity
         const purposeGroupData = [
-            { name: "Institutional - Classroom area", netFactor: 2, doorCapacity: 100, stairCapacity: 60 },
-            { name: "Institutional - Workshop and vocational areas", netFactor: 4.5, doorCapacity: null, stairCapacity: null }, // NR in image
-            { name: "Institutional - Day nurseries with sleeping facilities", netFactor: 3.5, doorCapacity: 30, stairCapacity: 15 },
-            { name: "Institutional - Hospital (Patient accommodation)", netFactor: 24, doorCapacity: 30, stairCapacity: 15 },
-            { name: "Other residential - Flats", netFactor: 20, doorCapacity: 50, stairCapacity: 30 },
-            { name: "Other residential - General public areas in hotels", netFactor: 24, doorCapacity: 50, stairCapacity: 30 },
-            { name: "Other residential - Hotels (bedroom in hotels at 2 person per room)", netFactor: 24, doorCapacity: 50, stairCapacity: 30 },
-            { name: "Office", netFactor: 10, doorCapacity: 100, stairCapacity: 60 },
-            { name: "Shop (Street floor and sale basement)", netFactor: 3, doorCapacity: 100, stairCapacity: 60 },
-            { name: "Shop (Other floors)", netFactor: 6, doorCapacity: 100, stairCapacity: 60 },
-            { name: "Shop (Storage and shipping)", netFactor: 10, doorCapacity: 100, stairCapacity: 60 },
-            { name: "Factory", netFactor: 10, doorCapacity: 100, stairCapacity: 60 }, // Corrected stairCapacity to 60
-            { name: "Place of assembly - Areas of concentrated use without fixed seating", netFactor: 1.5, doorCapacity: 100, stairCapacity: 75 },
-            { name: "Place of assembly - Areas without fixed seating", netFactor: 0.7, doorCapacity: 100, stairCapacity: 75 }, // Renamed from "Standing space" to match table
-            { name: "Place of assembly - Standing space", netFactor: 0.3, doorCapacity: 100, stairCapacity: 75 }, // Kept "Standing space" for 0.3 as it's distinct
-            { name: "Storage and general - Car parks", netFactor: 20, doorCapacity: 100, stairCapacity: 60 },
-            { name: "Storage and general - Warehouse", netFactor: 30, doorCapacity: 100, stairCapacity: 60 }
+            { name: "Institutional - Classroom area", netFactor: 2, doorCapacity: 100, horizontalExitCapacity: 100, rampMainExitCapacity: 100, rampSecondExitCapacity: 60, stairCapacity: 60 },
+            { name: "Institutional - Workshop and vocational areas", netFactor: 4.5, doorCapacity: null, horizontalExitCapacity: null, rampMainExitCapacity: null, rampSecondExitCapacity: null, stairCapacity: null }, // NR in image
+            { name: "Institutional - Day nurseries with sleeping facilities", netFactor: 3.5, doorCapacity: 30, horizontalExitCapacity: 30, rampMainExitCapacity: 30, rampSecondExitCapacity: 30, stairCapacity: 15 },
+            { name: "Institutional - Hospital (Patient accommodation)", netFactor: 24, doorCapacity: 30, horizontalExitCapacity: 30, rampMainExitCapacity: 30, rampSecondExitCapacity: 30, stairCapacity: 15 },
+            { name: "Other residential - Flats", netFactor: 20, doorCapacity: 50, horizontalExitCapacity: 50, rampMainExitCapacity: 50, rampSecondExitCapacity: 50, stairCapacity: 30 },
+            { name: "Other residential - General public areas in hotels", netFactor: 24, doorCapacity: 50, horizontalExitCapacity: 50, rampMainExitCapacity: 50, rampSecondExitCapacity: 50, stairCapacity: 30 },
+            { name: "Other residential - Hotels (bedroom in hotels at 2 person per room)", netFactor: 24, doorCapacity: 50, horizontalExitCapacity: 50, rampMainExitCapacity: 50, rampSecondExitCapacity: 50, stairCapacity: 30 },
+            { name: "Office", netFactor: 10, doorCapacity: 100, horizontalExitCapacity: 100, rampMainExitCapacity: 100, rampSecondExitCapacity: 60, stairCapacity: 60 },
+            { name: "Shop (Street floor and sale basement)", netFactor: 3, doorCapacity: 100, horizontalExitCapacity: 100, rampMainExitCapacity: 100, rampSecondExitCapacity: 60, stairCapacity: 60 },
+            { name: "Shop (Other floors)", netFactor: 6, doorCapacity: 100, horizontalExitCapacity: 100, rampMainExitCapacity: 100, rampSecondExitCapacity: 60, stairCapacity: 60 },
+            { name: "Shop (Storage and shipping)", netFactor: 10, doorCapacity: 100, horizontalExitCapacity: 100, rampMainExitCapacity: 100, rampSecondExitCapacity: 60, stairCapacity: 60 },
+            { name: "Factory", netFactor: 10, doorCapacity: 100, horizontalExitCapacity: 100, rampMainExitCapacity: 100, rampSecondExitCapacity: 60, stairCapacity: 60 }, // Corrected stairCapacity to 60
+            { name: "Place of assembly - Areas of concentrated use without fixed seating", netFactor: 1.5, doorCapacity: 100, horizontalExitCapacity: 100, rampMainExitCapacity: 100, rampSecondExitCapacity: 75, stairCapacity: 75 },
+            { name: "Place of assembly - Areas without fixed seating", netFactor: 0.7, doorCapacity: 100, horizontalExitCapacity: 100, rampMainExitCapacity: 100, rampSecondExitCapacity: 75, stairCapacity: 75 },
+            { name: "Place of assembly - Standing space", netFactor: 0.3, doorCapacity: 100, horizontalExitCapacity: 100, rampMainExitCapacity: 100, rampSecondExitCapacity: 75, stairCapacity: 75 },
+            { name: "Storage and general - Car parks", netFactor: 20, doorCapacity: 100, horizontalExitCapacity: 100, rampMainExitCapacity: 100, rampSecondExitCapacity: 60, stairCapacity: 60 },
+            { name: "Storage and general - Warehouse", netFactor: 30, doorCapacity: 100, horizontalExitCapacity: 100, rampMainExitCapacity: 100, rampSecondExitCapacity: 60, stairCapacity: 60 }
         ];
 
         const UNIT_WIDTH = 0.55; // Standard unit width for exit calculations
