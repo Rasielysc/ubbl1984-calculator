@@ -653,10 +653,21 @@
             resultText += `Effective Width (excl. largest ${currentType}): ${effectiveWidthExclLargest.toFixed(2)}m\n\n`;
 
 
-            // Compliance check
-            const complianceStatus = totalProvidedWidth >= requiredWidth ? "Complies" : "Insufficient Width";
-            const statusEmoji = totalProvidedWidth >= requiredWidth ? "✅" : "❌";
-            resultText += `${statusEmoji} ${complianceStatus} (Required: ${requiredWidth.toFixed(2)}m)\n`;
+            // Determine minimum allowed width
+const minWidth = currentType === 'Stair' ? 0.9 : 0.7;
+const invalidWidths = widths.filter(w => w < minWidth);
+
+if (invalidWidths.length > 0) {
+    complianceResults.textContent = `❌ One or more ${currentType.toLowerCase()} widths are below the minimum allowed (${minWidth}m). Please correct the input.`;
+    lastCalculationResults = null;
+    return;
+}
+
+// Compliance check based on UBBL 7th Schedule: use effective width (excluding largest exit)
+const complianceStatus = effectiveWidthExclLargest >= requiredWidth ? "Complies" : "Insufficient Width";
+const statusEmoji = effectiveWidthExclLargest >= requiredWidth ? "✅" : "❌";
+            resultText += `${statusEmoji} ${complianceStatus} (Effective Width: ${effectiveWidthExclLargest.toFixed(2)}m, Required: ${requiredWidth.toFixed(2)}m)\n`;
+
 
             complianceResults.textContent = resultText;
 
