@@ -1,0 +1,375 @@
+
+<!DOCTYPE html>
+
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8" />
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+
+    <title>HL Inno Lab - Compliance Calculators</title>
+
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <style>
+
+        body {
+
+            font-family: "Segoe UI", "Helvetica Neue", Helvetica, Arial, sans-serif;
+
+            margin: 0;
+
+            padding: 0;
+
+            color: #fff;
+
+            text-align: justify;
+
+        }
+
+
+
+        /* Top Bar */
+
+        .topbar {
+
+            background-color: #703D29; /* brown only for top bar */
+
+            color: #fff;
+
+            display: flex;
+
+            align-items: center;
+
+            padding: 0.5rem 1rem;
+
+            position: fixed;
+
+            top: 0;
+
+            left: 0;
+
+            width: 100%;
+
+            z-index: 50;
+
+        }
+
+        .logo {
+
+            height: 40px;
+
+        }
+
+
+
+        /* Video Background */
+
+        .video-bg {
+
+            position: fixed;
+
+            top: 0;
+
+            left: 0;
+
+            width: 100%;
+
+            height: 100%;
+
+            object-fit: cover;
+
+            z-index: -2;
+
+        }
+
+        .video-overlay {
+
+            position: fixed;
+
+            top: 0;
+
+            left: 0;
+
+            width: 100%;
+
+            height: 100%;
+
+            background-color: rgba(20,20,20,0.7);
+
+            z-index: -1;
+
+        }
+
+
+
+        /* Main Overlay */
+
+        .overlay {
+
+            min-height: 100vh;
+
+            padding-top: 4.5rem; /* space for top bar */
+
+        }
+
+
+
+        .section {
+
+            background-color: #000; /* keep sections black */
+
+            padding: 2.5rem;
+
+            border-radius: 0.5rem;
+
+            box-shadow: 0 8px 16px rgba(0,0,0,0.6);
+
+            margin-bottom: 4rem;
+
+            max-width: 900px;
+
+            margin-left: auto;
+
+            margin-right: auto;
+
+        }
+
+
+
+        .main-title {
+
+            text-align: center;
+
+            font-size: 3rem;
+
+            font-weight: 700;
+
+            margin-bottom: 1rem;
+
+        }
+
+
+
+        .subtitle {
+
+            text-align: center;
+
+            font-size: 1.25rem;
+
+            font-weight: 700; /* bold for "Innovate." */
+
+            color: #e1e4e8;
+
+            margin-bottom: 0.5rem;
+
+        }
+
+
+
+        .subtitle span {
+
+            font-weight: 300; /* thin for the rest */
+
+        }
+
+
+
+        /* Section headers match Innovate style */
+
+        .section-header {
+
+            font-weight: 700;
+
+            font-size: 1.25rem;
+
+            color: #fff;
+
+            text-align: center;
+
+            margin-bottom: 1rem;
+
+        }
+
+
+
+        p.section-text {
+
+            font-size: 0.9rem;
+
+            line-height: 1.8;
+
+            font-weight: 400;
+
+            color: #e1e4e8;
+
+            margin-bottom: 1rem;
+
+        }
+
+
+
+        .button-grey {
+
+            background-color: #000;
+
+            color: #fff;
+
+            font-weight: 700;
+
+            padding: 0.75rem 1.5rem;
+
+            border: 2px solid #ccc;
+
+            border-radius: 0.3rem;
+
+            transition: background-color 0.2s ease, transform 0.15s ease, box-shadow 0.2s ease;
+
+            font-size: 0.875rem;
+
+        }
+
+        .button-grey:hover {
+
+            background-color: #222;
+
+            transform: translateY(-1px);
+
+            box-shadow: 0 2px 4px rgba(0,0,0,0.5);
+
+        }
+
+
+
+        @media (max-width: 768px) {
+
+            .main-title { font-size: 2.25rem; }
+
+            .subtitle { font-size: 1rem; }
+
+            .section-header { font-size: 1rem; margin-bottom: 0.75rem; }
+
+            .section { padding: 1.5rem; margin-left: 1rem; margin-right: 1rem; }
+
+        }
+
+    </style>
+
+</head>
+
+<body>
+
+
+
+    <!-- Top Bar -->
+
+    <div class="topbar">
+
+        <img src="assets/logo.png" alt="Company Logo" class="logo">
+
+    </div>
+
+
+
+    <!-- Video Background -->
+
+    <video class="video-bg" autoplay muted loop playsinline>
+
+        <source src="assets/Main.mp4" type="video/mp4">
+
+        Your browser does not support the video tag.
+
+    </video>
+
+    <div class="video-overlay"></div>
+
+
+
+    <!-- Main Content -->
+
+    <div class="overlay">
+
+        <div class="max-w-5xl mx-auto space-y-12 py-12">
+
+
+
+            <!-- Main Title & Subtitle -->
+
+            <h1 class="main-title">HL Inno Lab</h1>
+
+            <p class="subtitle">
+
+                <strong>Innovate.</strong> <span>Increase your productivity with Inno Lab tools.</span>
+
+            </p>
+
+
+
+            <!-- Fire Safety Section -->
+
+            <div id="fireSafetySection" class="section text-center">
+
+                <div class="section-header">Fire Safety & Exit Width</div>
+
+                <p class="section-text">
+
+                    Quickly determine required exit widths for stairs or doors based on building purpose group and floor area.
+
+                </p>
+
+                <div class="flex flex-col md:flex-row justify-center gap-6 mt-4">
+
+                    <a href="exit_width_info.html" class="button-grey w-full md:w-1/3 flex items-center justify-center">
+
+                        What is Exit Width?
+
+                    </a>
+
+                    <a href="exit_width_calculator.html" class="button-grey w-full md:w-1/3 flex items-center justify-center">
+
+                        Exit Width Calculator
+
+                    </a>
+
+                </div>
+
+            </div>
+
+
+
+            <!-- Parking Section -->
+
+            <div id="parkingSection" class="section text-center">
+
+                <div class="section-header">Parking Requirement Calculator</div>
+
+                <p class="section-text">
+
+                    Calculate minimum parking requirements based on building type, number of units, and gross floor area.
+
+                </p>
+
+                <div class="flex flex-col md:flex-row justify-center gap-6 mt-4">
+
+                    <a href="dbkl_parking.html" class="button-grey w-full md:w-1/3 flex items-center justify-center">
+
+                        DBKL
+                    </a>
+
+                </div>
+
+            </div>
+
+
+
+        </div>
+
+    </div>
+
+
+
+</body>
+
+</html>

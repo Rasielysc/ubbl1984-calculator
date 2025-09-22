@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UBBL Exit Width Calculator</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #1E1E1E;
+        }
+        .topbar {
+            background-color: #703D29;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            padding: 0.5rem 1rem;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            z-index: 50;
+        }
+    </style>
+</head>
+<body class="bg-[#1E1E1E] text-white min-h-screen flex items-center justify-center py-10 px-4">
+
+    <!-- Top Bar -->
+    <div class="topbar">
+        <!-- Placeholder for the logo. -->
+        <img src="assets/logo.png" alt="Company Logo" class="h-10">
+    </div>
+
+    <div class="relative w-full max-w-2xl p-8 md:p-12 bg-white text-gray-900 rounded-2xl shadow-xl border border-gray-300 mt-20">
+        
+        <!-- Header -->
+        <header class="text-left mb-10">
+            <h1 class="text-3xl md:text-4xl font-extrabold text-gray-900 mb-2">UBBL Exit Width Calculator</h1>
+            <p class="text-sm md:text-base text-gray-900">Enter floor area and occupancy information to calculate required exit width per UBBL 7th Schedule.</p>
+        </header>
+
+        <!-- Main Content -->
+        <div class="flex flex-col items-center gap-10">
+
+            <!-- Calculation Form -->
+            <div class="w-full bg-white p-6 md:p-8 rounded-xl border border-gray-300 shadow-lg">
+                <h2 class="text-xl md:text-2xl font-bold text-gray-900 mb-6">Calculate Exit Width</h2>
+                <form id="calculatorForm" class="space-y-6">
+                    <div>
+                        <label for="spaceName" class="block text-sm font-medium text-gray-900 mb-1">Space Name (Optional)</label>
+                        <input type="text" id="spaceName" placeholder="e.g., Office Floor 1" class="w-full px-4 py-2 bg-gray-100 border border-gray-300 rounded-lg text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-[#8C5940] focus:border-transparent transition duration-200 ease-in-out">
+                    </div>
+                    <div>
+                        <label for="purposeGroup" class="block text-sm font-medium text-gray-900 mb-1">Purpose Group</label>
+                        <select id="purposeGroup" class="w-full px-4 py-2 bg-gray-100 border border-gray-300 rounded-lg text-gray-900 focus:outline-none focus:ring-2 focus:ring-[#8C5940] focus:border-transparent transition duration-200 ease-in-out">
+                            <!-- Options will be populated by JavaScript -->
+                        </select>
+                    </div>
+                    <div>
+                        <label for="floorArea" class="block text-sm font-medium text-gray-900 mb-1">Floor Area (m²)</label>
+                        <input type="number" id="floorArea" step="0.01" min="0" required class="w-full px-4 py-2 bg-gray-100 border border-gray-300 rounded-lg text-gray-900 focus:outline-none focus:ring-2 focus:ring-[#8C5940] focus:border-transparent transition duration-200 ease-in-out">
+                    </div>
+                    <div>
+                        <label for="exitType" class="block text-sm font-medium text-gray-900 mb-1">Exit Type</label>
+                        <select id="exitType" class="w-full px-4 py-2 bg-gray-100 border border-gray-300 rounded-lg text-gray-900 focus:outline-none focus:ring-2 focus:ring-[#8C5940] focus:border-transparent transition duration-200 ease-in-out">
+                            <option value="door">Door</option>
+                            <option value="horizontal">Horizontal Exit</option>
+                            <option value="rampMain">Ramp Main Exit</option>
+                            <option value="rampSecond">Ramp Second Exit</option>
+                            <option value="stairsMain">Stairs</option>
+                            <option value="stairsSecond">Stairs (Second Exit)</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label for="numExits" class="block text-sm font-medium text-gray-900 mb-1">Number of Exits</label>
+                        <input type="number" id="numExits" min="1" required class="w-full px-4 py-2 bg-gray-100 border border-gray-300 rounded-lg text-gray-900 focus:outline-none focus:ring-2 focus:ring-[#8C5940] focus:border-transparent transition duration-200 ease-in-out">
+                    </div>
+                    <!-- Dynamic Door/Stair Width Inputs -->
+                    <div id="exitWidthsContainer" class="space-y-4"></div>
+
+                    <div class="flex justify-end">
+                        <button type="submit" class="w-full sm:w-auto px-8 py-3 bg-[#703D29] text-white font-bold rounded-lg shadow-md hover:bg-[#5D3120] focus:outline-none focus:ring-2 focus:ring-[#8C5940] transition duration-200 ease-in-out">
+                            Calculate
+                        </button>
+                    </div>
+                </form>
+                
+                <div class="flex justify-start mt-6">
+                    <button id="backToMenuButton" class="px-8 py-3 bg-gray-200 text-gray-800 font-bold rounded-lg shadow-md hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-400 transition duration-200 ease-in-out">
+                        Back to Menu
+                    </button>
+                </div>
+
+                <!-- Results Section -->
+                <div id="results" class="mt-8 pt-6 border-t border-gray-300">
+                    <h3 class="text-xl font-bold text-gray-900 mb-4">Results</h3>
+                    <div id="resultsContent" class="space-y-3 text-gray-800">
+                        <p class="text-sm italic">Fill in the form and click 'Calculate' to see the results.</p>
+                    </div>
+                    <button id="copyButton" class="w-full sm:w-auto mt-4 px-8 py-3 bg-gray-200 text-gray-800 font-bold rounded-lg shadow-md hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-400 transition duration-200 ease-in-out hidden">
+                        Copy Results
+                    </button>
+                </div>
+            </div>
+
+        </div>
+    </div>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+
+            // Data from UBBL 7th Schedule
+            const purposeGroups = [
+                { name: "Small residential", occupancyFactor: "NR", doorCapacity: "NR", horizontalExitCapacity: "NR", rampMainExitCapacity: "NR", rampSecondExitCapacity: "NR", stairsCapacity: "NR" },
+                { name: "Institutional - Classroom area", occupancyFactor: 2, doorCapacity: 100, horizontalExitCapacity: 100, rampMainExitCapacity: 100, rampSecondExitCapacity: 60, stairsCapacity: 60 },
+                { name: "Institutional - Workshop and vocational areas", occupancyFactor: 4.5, doorCapacity: 100, horizontalExitCapacity: 100, rampMainExitCapacity: 100, rampSecondExitCapacity: 60, stairsCapacity: 60 },
+                { name: "Institutional - Day nurseries with sleeping facilities", occupancyFactor: 3.5, doorCapacity: 100, horizontalExitCapacity: 100, rampMainExitCapacity: 100, rampSecondExitCapacity: 60, stairsCapacity: 60 },
+                { name: "Institutional - Hospital Patient accommodation", occupancyFactor: 24, doorCapacity: 30, horizontalExitCapacity: 30, rampMainExitCapacity: 30, rampSecondExitCapacity: 15, stairsCapacity: 30 },
+                { name: "Other residential", occupancyFactor: 20, doorCapacity: 50, horizontalExitCapacity: 50, rampMainExitCapacity: 50, rampSecondExitCapacity: 30, stairsCapacity: 50 },
+                { name: "Other residential - Apartment/Flats", occupancyFactor: 24, doorCapacity: 50, horizontalExitCapacity: 50, rampMainExitCapacity: 50, rampSecondExitCapacity: 30, stairsCapacity: 50 },
+                { name: "Other residential - General public areas in hotels", occupancyFactor: 24, doorCapacity: 50, horizontalExitCapacity: 50, rampMainExitCapacity: 50, rampSecondExitCapacity: 30, stairsCapacity: 50 },
+                { name: "Office", occupancyFactor: 10, doorCapacity: 100, horizontalExitCapacity: 100, rampMainExitCapacity: 100, rampSecondExitCapacity: 60, stairsCapacity: 60 },
+                { name: "Shop - Street floor and sale basement", occupancyFactor: 3, doorCapacity: 100, horizontalExitCapacity: 100, rampMainExitCapacity: 100, rampSecondExitCapacity: 60, stairsCapacity: 60 },
+                { name: "Shop - Other floors", occupancyFactor: 6, doorCapacity: 100, horizontalExitCapacity: 100, rampMainExitCapacity: 100, rampSecondExitCapacity: 60, stairsCapacity: 60 },
+                { name: "Shop - Storage and shipping", occupancyFactor: 10, doorCapacity: 100, horizontalExitCapacity: 100, rampMainExitCapacity: 100, rampSecondExitCapacity: 60, stairsCapacity: 60 },
+                { name: "Factory", occupancyFactor: 10, doorCapacity: 100, horizontalExitCapacity: 100, rampMainExitCapacity: 100, rampSecondExitCapacity: 60, stairsCapacity: 60 },
+                { name: "Place of assembly - Areas without fixed seating", occupancyFactor: 0.7, doorCapacity: 100, horizontalExitCapacity: 100, rampMainExitCapacity: 100, rampSecondExitCapacity: 75, stairsCapacity: 75 },
+                { name: "Place of assembly - Standing space", occupancyFactor: 0.3, doorCapacity: 100, horizontalExitCapacity: 100, rampMainExitCapacity: 100, rampSecondExitCapacity: 75, stairsCapacity: 75 },
+                { name: "Storage and general - Car parks", occupancyFactor: 20, doorCapacity: 100, horizontalExitCapacity: 100, rampMainExitCapacity: 100, rampSecondExitCapacity: 60, stairsCapacity: 60 },
+                { name: "Storage and general - Warehouse", occupancyFactor: 30, doorCapacity: 100, horizontalExitCapacity: 100, rampMainExitCapacity: 100, rampSecondExitCapacity: 60, stairsCapacity: 60 }
+            ];
+
+            const purposeGroupSelect = document.getElementById('purposeGroup');
+            const calculatorForm = document.getElementById('calculatorForm');
+            const resultsContent = document.getElementById('resultsContent');
+            const copyButton = document.getElementById('copyButton');
+            const backToMenuButton = document.getElementById('backToMenuButton');
+            const numExitsInput = document.getElementById('numExits');
+            const exitTypeSelect = document.getElementById('exitType');
+            const exitWidthsContainer = document.getElementById('exitWidthsContainer');
+
+            // Populate the Purpose Group dropdown
+            function populateData() {
+                purposeGroups.forEach(group => {
+                    const option = document.createElement('option');
+                    option.value = group.name;
+                    option.textContent = group.name;
+                    purposeGroupSelect.appendChild(option);
+                });
+            }
+
+            // Function to generate dynamic exit width inputs
+            function generateExitWidthInputs() {
+                const numExits = parseInt(numExitsInput.value, 10);
+                const exitType = exitTypeSelect.value;
+                let exitTypeName = exitType.charAt(0).toUpperCase() + exitType.slice(1);
+                if (exitType.startsWith('stairs')) {
+                     exitTypeName = 'Stairs';
+                }
+                exitWidthsContainer.innerHTML = ''; // Clear previous inputs
+
+                if (numExits > 0) {
+                    for (let i = 1; i <= numExits; i++) {
+                        const inputDiv = document.createElement('div');
+                        inputDiv.innerHTML = `
+                            <label for="${exitType}Width${i}" class="block text-sm font-medium text-gray-900 mb-1">${exitTypeName} ${i} Width (m)</label>
+                            <input type="number" id="${exitType}Width${i}" value="0.90" step="0.01" min="0.55" required class="exit-width-input w-full px-4 py-2 bg-gray-100 border border-gray-300 rounded-lg text-gray-900 focus:outline-none focus:ring-2 focus:ring-[#8C5940] focus:border-transparent transition duration-200 ease-in-out">
+                        `;
+                        exitWidthsContainer.appendChild(inputDiv);
+                    }
+                }
+            }
+
+            // Function to perform the calculation and display results
+            function calculateExitWidth(event) {
+                event.preventDefault(); // Prevent form from submitting and reloading the page
+
+                const spaceName = document.getElementById('spaceName').value || 'N/A';
+                const floorArea = parseFloat(document.getElementById('floorArea').value);
+                const numExits = parseInt(document.getElementById('numExits').value, 10);
+                const selectedGroupName = purposeGroupSelect.value;
+                const exitType = exitTypeSelect.value;
+                const selectedGroup = purposeGroups.find(group => group.name === selectedGroupName);
+
+                if (!selectedGroup) {
+                    resultsContent.innerHTML = `<p class="text-sm text-red-600">Please select a valid Purpose Group.</p>`;
+                    return;
+                }
+                
+                // Exit width is measured in units of 550mm
+                const UNIT_WIDTH = 0.55; 
+                let occupancyFactor = selectedGroup.occupancyFactor;
+                let exitCapacity;
+                let exitTypeName = exitTypeSelect.options[exitTypeSelect.selectedIndex].text;
+
+                switch (exitType) {
+                    case 'door':
+                        exitCapacity = selectedGroup.doorCapacity;
+                        break;
+                    case 'horizontal':
+                        exitCapacity = selectedGroup.horizontalExitCapacity;
+                        break;
+                    case 'rampMain':
+                        exitCapacity = selectedGroup.rampMainExitCapacity;
+                        break;
+                    case 'rampSecond':
+                        exitCapacity = selectedGroup.rampSecondExitCapacity;
+                        break;
+                    case 'stairsMain':
+                    case 'stairsSecond':
+                        exitCapacity = selectedGroup.stairsCapacity;
+                        break;
+                    default:
+                        exitCapacity = 0;
+                }
+
+                if (occupancyFactor === "NR" || exitCapacity === "NR") {
+                    resultsContent.innerHTML = `<p class="text-sm text-yellow-600">The calculation is not required for this purpose group and exit type.</p>`;
+                    copyButton.classList.add('hidden');
+                    return;
+                }
+
+                // 1. Calculate Occupancy Load
+                const occupancyLoad = Math.ceil(floorArea / occupancyFactor);
+
+                // 2. Calculate Required Exit Width
+                const requiredExitUnits = Math.ceil(occupancyLoad / exitCapacity);
+                const requiredExitWidth = (requiredExitUnits * UNIT_WIDTH);
+
+                // 3. Calculate Provided Exit Widths by summing the dynamic inputs
+                const providedWidths = [];
+                const exitWidthInputs = document.querySelectorAll('.exit-width-input');
+                let totalProvidedWidth = 0;
+                let largestWidth = 0;
+                exitWidthInputs.forEach((input, index) => {
+                    const width = parseFloat(input.value) || 0;
+                    let providedExitName = exitTypeName;
+                    if (exitType.startsWith('stairs')) {
+                        providedExitName = 'Stairs';
+                    }
+                    providedWidths.push({ name: `${providedExitName} ${index + 1}`, width: width });
+                    totalProvidedWidth += width;
+                    if (width > largestWidth) {
+                        largestWidth = width;
+                    }
+                });
+
+                // 4. Calculate Effective Width (total provided width minus the largest single width)
+                const effectiveWidth = (totalProvidedWidth - largestWidth);
+                
+                // 5. Determine Compliance (Effective Width must be greater than or equal to the required width)
+                const isCompliant = parseFloat(effectiveWidth) >= parseFloat(requiredExitWidth);
+
+                // Display results in the specified format
+                let providedWidthsList = providedWidths.map(item => `\n${item.name}: ${item.width.toFixed(2)}m`).join('');
+                
+                let resultText = `
+${exitTypeName} Width Calculation:
+Purpose Group: ${selectedGroupName}
+Floor Area: ${floorArea} m²
+Number of ${exitTypeName}s: ${numExits}
+
+Occupancy Load = ${floorArea} m² / ${occupancyFactor} = ${occupancyLoad} PAX
+Required Exit Units = ${occupancyLoad} PAX / ${exitCapacity} = ${requiredExitUnits} units
+Required Width = ${requiredExitUnits} units * 0.55m/unit = ${requiredExitWidth.toFixed(2)}m
+
+Widths Provided:${providedWidthsList}
+Total Provided Width: ${totalProvidedWidth.toFixed(2)}m
+Effective Width (excl. largest ${exitTypeName}): ${effectiveWidth.toFixed(2)}m
+
+${isCompliant ? `✅ Sufficient Width` : `❌ Insufficient Width`} (Effective Width: ${effectiveWidth.toFixed(2)}m, Required: ${requiredExitWidth.toFixed(2)}m)
+                `.trim();
+
+                // Display the results with proper formatting
+                resultsContent.innerHTML = `<pre class="text-sm font-mono overflow-auto whitespace-pre-wrap">${resultText}</pre>`;
+                copyButton.classList.remove('hidden');
+            }
+
+            // Function to copy results to clipboard
+            function copyResultsToClipboard() {
+                const resultsTextElement = document.getElementById('resultsContent');
+                if (resultsTextElement) {
+                    const text = resultsTextElement.innerText;
+                    const tempTextArea = document.createElement('textarea');
+                    tempTextArea.value = text;
+                    document.body.appendChild(tempTextArea);
+                    tempTextArea.select();
+                    document.execCommand('copy');
+                    document.body.removeChild(tempTextArea);
+                    copyButton.textContent = 'Copied!';
+                    setTimeout(() => {
+                        copyButton.textContent = 'Copy Results';
+                    }, 2000);
+                }
+            }
+
+            // Attach event listeners
+            numExitsInput.addEventListener('input', generateExitWidthInputs);
+            exitTypeSelect.addEventListener('change', generateExitWidthInputs);
+            calculatorForm.addEventListener('submit', calculateExitWidth);
+            copyButton.addEventListener('click', copyResultsToClipboard);
+            backToMenuButton.addEventListener('click', () => {
+                window.location.href = 'main.html';
+            });
+
+            // Initial population
+            populateData();
+        });
+    </script>
+
+</body>
+</html>
